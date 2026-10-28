@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#09090b" />
+      <stop offset="50%" stop-color="#18181b" />
+      <stop offset="100%" stop-color="#09090b" />
+    </linearGradient>
+    <linearGradient id="text-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="15" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Fondo -->
+  <rect width="1000" height="300" rx="20" fill="url(#bg-grad)" stroke="#27272a" stroke-width="2"/>
+
+  <!-- Destellos decorativos de fondo -->
+  <circle cx="150" cy="80" r="120" fill="#0284c7" opacity="0.15" filter="url(#glow)"/>
+  <circle cx="850" cy="220" r="140" fill="#7c3aed" opacity="0.15" filter="url(#glow)"/>
+
+  <!-- Logo Manzana Apple Estilizado -->
+  <path fill="#ffffff" d="M120 185c-1.5 3.5-3.3 6.5-5.4 9.4-2.8 3.9-5 6.6-6.7 8.1-2.7 2.5-5.6 3.7-8.7 3.8-2.2 0-4.9-.6-8-1.9-3.1-1.3-6-1.9-8.6-1.9-2.8 0-5.7.6-8.9 1.9-3.2 1.3-5.7 2-7.6 2-2.6.1-5.5-1.1-8.7-3.6-1.8-1.5-4.1-4.2-7-8.2-4.4-6.2-7.8-13-10.2-20.4-2.4-7.4-3.6-14.2-3.6-20.4 0-8.8 2.3-16 6.9-21.5 4.6-5.5 10.3-8.3 17.2-8.4 3.3 0 6.7.8 10.1 2.5 3.4 1.7 5.7 2.5 6.9 2.5 1 0 3.4-.9 7-2.6 3.6-1.8 7-2.6 10.3-2.4 10.6.5 18.7 4.7 24.4 12.8-9.4 5.7-13.9 13.4-13.6 23.1.3 8.5 3.5 15.3 9.7 20.3 2.6 2.1 5.7 3.7 9.4 4.6-1.3 3.6-2.8 7.2-4.5 10.6zM100.6 86c0-4.4 1.6-8.5 4.8-12.3 3.2-3.8 7.3-6 12.3-6.7.1.6.1 1.2.1 1.8 0 4.4-1.6 8.6-4.9 12.7-3.3 4.1-7.4 6.4-12.4 6.9-.1-.6-.2-1.4-.2-2.4z"/>
+
+  <!-- Títulos principales -->
+  <text x="180" y="130" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-size="42" font-weight="800" fill="url(#text-grad)">macOS Cloud Simulator</text>
+  <text x="180" y="165" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-size="16" font-weight="600" fill="#a1a1aa">Web OS Experience • VS Code • Game3DMaker • Modo 3D</text>
+
+  <!-- Tarjetas de características técnicas en el banner -->
+  <g transform="translate(180, 195)">
+    <!-- Badge 1 -->
+    <rect x="0" y="0" width="120" height="32" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+    <text x="60" y="21" font-family="monospace" font-size="12" fill="#38bdf8" text-anchor="middle">⚡ Vercel Ready</text>
+
+    <!-- Badge 2 -->
+    <rect x="135" y="0" width="110" height="32" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+    <text x="190" y="21" font-family="monospace" font-size="12" fill="#4ade80" text-anchor="middle">🎮 PlayFree ($)</text>
+
+    <!-- Badge 3 -->
+    <rect x="255" y="0" width="130" height="32" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+    <text x="320" y="21" font-family="monospace" font-size="12" fill="#c084fc" text-anchor="middle">💻 WASM v86 Linux</text>
+    
+    <!-- Badge 4 -->
+    <rect x="395" y="0" width="110" height="32" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+    <text x="450" y="21" font-family="monospace" font-size="12" fill="#f43f5e" text-anchor="middle">🪟 Windows 10</text>
+  </g>
+</svg>
