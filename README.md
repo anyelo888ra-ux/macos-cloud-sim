@@ -9,21 +9,20 @@ Un simulador web avanzado e interactivo de **macOS** enfocado en la ejecución d
 
 ## 🌟 Características Principales
 
-* 🍎 **Ecosistema macOS Fiel:** Menú superior dinámico (*Top Bar*), *Control Center*, reloj en tiempo real y *Dock* flotante con efecto de aumento (*Magnification*).
-* 📹 **OBS Studio Web:** Captura de pantalla real en tiempo real mediante `getDisplayMedia`, filtros de lienzo (*Canvas Filters*) y exportación/grabación de video `.webm`/`.mp4` con la API `MediaRecorder`.
-* 💻 **VMware Virtual Machine (WASM):** Entorno de emulación x86 ligero impulsado por WebAssembly (`v86`) para bootear distribuciones reales de Linux o sistemas operativos clásicos directamente en la RAM.
-* 🌐 **Safari Web Browser:** Navegador funcional optimizado para la lectura y navegación web.
-* 🖥️ **Gestor de Ventanas (WindowManager):** Control completo de profundidad ($Z$-Index), arrastre fluido, redimensionamiento, maximizado y minimizado al Dock.
-* 💾 **Sistema de Archivos Persistente:** Guardado automático de datos mediante `IndexedDB` y `LocalStorage`.
+* 🍎 **Ecosistema macOS Fiel:** Menú superior dinámico (*Top Bar*), reloj en tiempo real, menús desplegables intermedios y *Dock* flotante con efecto *Magnification*.
+* 📹 **OBS Studio Web:** Captura de pantalla real mediante `getDisplayMedia` y grabación de video `.webm` con la API `MediaRecorder`.
+* 💻 **VMware Virtual Machine (WASM):** Entorno de emulación x86 ligero impulsado por WebAssembly (`v86`) para bootear distribuciones reales de Linux directamente en la RAM.
+* 🖥️ **Terminal ZSH Virtual:** Emulador de terminal con comandos reales (`neofetch`, `ls`, `echo`, `clear`, `date`).
+* 🌐 **Safari Web Browser:** Navegador funcional optimizado para navegación web dentro del simulador.
+* 📁 **Finder:** Explorador de archivos intuitivo para administrar el ecosistema virtual.
 
 ---
 
 ## 🛠️ Tecnologías Utilizadas
 
 * **Frontend:** HTML5, CSS3, JavaScript (ES6+), Tailwind CSS.
-* **Iconos & Estilos:** FontAwesome 6, Google SF Pro Fonts.
 * **Emulación & APIS:** WebAssembly (`v86`), WebRTC / Screen Capture API, `MediaRecorder` API.
-* **Alojamiento:** Desplegado en **Vercel** para rendimiento de alta velocidad y compatibilidad de rutas dinámicas.
+* **Alojamiento:** Desplegado en **Vercel** para velocidad y compatibilidad de rutas.
 
 ---
 
