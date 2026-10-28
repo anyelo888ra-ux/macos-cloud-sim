@@ -5,24 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>macOS Cloud Simulator — Web OS Experience</title>
     
-    <!-- Favicon vinculado -->
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <!-- Engine v86 para VMware (WASM) -->
     <script src="https://copy.sh/v86/build/v86_all.js"></script>
+    <!-- Three.js para la Room 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
         body {
             font-family: -apple-system, 'SF Pro Display', BlinkMacSystemFont, sans-serif;
-            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover;
+            background: #000;
             color: #fff;
             overflow: hidden;
             user-select: none;
+        }
+
+        #desktop-screen {
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2000&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            transition: filter 0.5s ease, opacity 0.5s ease;
         }
 
         .macos-glass {
@@ -65,275 +72,566 @@
             border-radius: 8px;
             padding: 4px 0;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            min-width: 160px;
+            min-width: 220px;
             z-index: 100;
         }
 
         .dropdown-item {
-            padding: 4px 12px;
+            padding: 6px 14px;
             font-size: 12px;
             color: #ececec;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
+            align-items: center;
         }
 
         .dropdown-item:hover {
             background: #007aff;
             color: #fff;
         }
+
+        /* Explosion Shake Animation */
+        @keyframes explosion-shake {
+            0% { transform: translate(0, 0) rotate(0deg); filter: hue-rotate(0deg) contrast(200%); }
+            20% { transform: translate(-15px, 15px) rotate(-5deg); filter: sepia(100%) hue-rotate(300deg) saturate(500%); }
+            40% { transform: translate(15px, -15px) rotate(5deg); }
+            60% { transform: translate(-20px, -10px) rotate(-10deg); }
+            80% { transform: translate(20px, 10px) rotate(10deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        .exploding {
+            animation: explosion-shake 0.15s infinite;
+        }
     </style>
 </head>
 <body class="h-screen w-screen relative flex flex-col justify-between overflow-hidden" onclick="closeAllDropdowns(event)">
 
-    <!-- macOS Top Menu Bar -->
-    <div class="h-7 w-full macos-glass z-50 flex items-center justify-between px-4 text-xs font-medium text-white/90 border-b border-white/10 relative">
-        <div class="flex items-center gap-4">
-            <div class="relative">
-                <i class="fa-brands fa-apple text-sm hover:text-sky-400 cursor-pointer" onclick="toggleDropdown(event, 'menu-apple')"></i>
-                <div id="menu-apple" class="dropdown-menu hidden left-0">
-                    <div class="dropdown-item font-semibold" onclick="alert('macOS Cloud Simulator v2.5')">Acerca de esta Mac</div>
-                    <div class="h-[1px] bg-white/10 my-1"></div>
-                    <div class="dropdown-item" onclick="openApp('finder')">Preferencias del Sistema</div>
-                    <div class="dropdown-item" onclick="location.reload()">Reiniciar...</div>
-                </div>
-            </div>
-
-            <div class="relative">
-                <span class="font-bold cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-finder')">Finder</span>
-                <div id="menu-finder" class="dropdown-menu hidden left-0">
-                    <div class="dropdown-item" onclick="openApp('finder')">Abrir Finder</div>
-                    <div class="dropdown-item" onclick="alert('Vaciar Papelera de Reciclaje')">Vaciar Papelera</div>
-                </div>
-            </div>
-
-            <div class="relative hidden sm:inline">
-                <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-archivo')">Archivo</span>
-                <div id="menu-archivo" class="dropdown-menu hidden left-0">
-                    <div class="dropdown-item" onclick="openApp('terminal')">Nueva Terminal <span>⌘T</span></div>
-                    <div class="dropdown-item" onclick="openApp('safari')">Pestaña de Safari <span>⌘N</span></div>
-                </div>
-            </div>
-
-            <div class="relative hidden sm:inline">
-                <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-edicion')">Edición</span>
-                <div id="menu-edicion" class="dropdown-menu hidden left-0">
-                    <div class="dropdown-item" onclick="alert('Deshacer')">Deshacer <span>⌘Z</span></div>
-                    <div class="dropdown-item" onclick="alert('Copiar')">Copiar <span>⌘C</span></div>
-                </div>
-            </div>
-
-            <div class="relative hidden sm:inline">
-                <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-vis')">Visualización</span>
-                <div id="menu-vis" class="dropdown-menu hidden left-0">
-                    <div class="dropdown-item" onclick="document.body.requestFullscreen()">Pantalla Completa</div>
-                </div>
-            </div>
-
-            <div class="relative hidden sm:inline">
-                <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-ventana')">Ventana</span>
-                <div id="menu-ventana" class="dropdown-menu hidden left-0">
-                    <div class="dropdown-item" onclick="closeAllApps()">Cerrar Todo</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-4">
-            <i class="fa-solid fa-wifi"></i>
-            <i class="fa-solid fa-battery-three-quarters"></i>
-            <span id="clock-display">12:00 PM</span>
+    <!-- PANTALLA DE ARRANQUE / BOOT ANIMATION -->
+    <div id="boot-screen" class="fixed inset-0 bg-black z-[200] flex flex-col items-center justify-center transition-opacity duration-1000">
+        <i class="fa-brands fa-apple text-7xl text-white mb-10"></i>
+        <div class="w-48 h-1.5 bg-zinc-800 rounded-full overflow-hidden border border-white/10">
+            <div id="boot-progress" class="h-full bg-white w-0 transition-all duration-100 ease-linear"></div>
         </div>
     </div>
 
-    <!-- Escritorio Principal -->
-    <div id="desktop-area" class="flex-grow relative overflow-hidden p-6">
-        <div class="grid grid-cols-1 gap-6 w-20">
-            <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('obs')">
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-zinc-800 to-zinc-600 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
-                    <i class="fa-solid fa-video text-red-400"></i>
+    <!-- MUNDO 3D (HABITACIÓN Y TIENDA APPLE) -->
+    <div id="world-3d" class="fixed inset-0 bg-zinc-950 z-[150] hidden flex flex-col items-center justify-between p-8">
+        <div class="w-full flex justify-between items-center bg-black/60 p-4 rounded-2xl border border-white/10">
+            <h1 class="text-lg font-bold text-sky-400 font-mono"><i class="fa-solid fa-cube mr-2"></i>Mundo Real 3D — Habitación & Tienda Apple</h1>
+            <button onclick="returnToLaptop()" id="btn-back-laptop" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 font-bold text-xs rounded-xl transition">Volver a Usar Laptop 💻</button>
+        </div>
+
+        <div id="canvas-3d-container" class="w-full flex-grow my-4 rounded-3xl overflow-hidden border border-white/10 relative flex items-center justify-center bg-zinc-900">
+            <div id="room-canvas" class="w-full h-full"></div>
+
+            <!-- Interfaz overlay en mundo 3D -->
+            <div id="apple-store-ui" class="absolute inset-0 bg-black/80 hidden flex flex-col items-center justify-center gap-6 p-6">
+                <i class="fa-brands fa-apple text-6xl text-white"></i>
+                <h2 class="text-2xl font-bold text-white">Apple Store Oficial</h2>
+                <p class="text-sm text-zinc-400 text-center max-w-md">¡Tu MacBook explotó por usar el Wi-Fi de McDonald's! Compra un reemplazo para volver a usar tu macOS Cloud Simulator.</p>
+                <div class="bg-zinc-900 p-6 rounded-2xl border border-white/10 flex flex-col items-center gap-4">
+                    <span class="text-xl font-bold text-emerald-400">MacBook Pro M3 — $1,200</span>
+                    <button onclick="buyNewLaptop()" class="px-6 py-3 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-xl shadow-lg transition">Comprar Nueva MacBook 🛍️</button>
                 </div>
-                <span class="text-[11px] font-medium text-white drop-shadow-md text-center">OBS Studio</span>
-            </div>
-            
-            <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('vmware')">
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-600 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
-                    <i class="fa-solid fa-server text-white"></i>
-                </div>
-                <span class="text-[11px] font-medium text-white drop-shadow-md text-center">VMware</span>
             </div>
 
-            <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('safari')">
-                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
-                    <i class="fa-solid fa-compass text-white"></i>
+            <div id="charger-ui" class="absolute inset-0 bg-black/80 hidden flex flex-col items-center justify-center gap-6 p-6">
+                <i class="fa-solid fa-battery-empty text-6xl text-rose-500"></i>
+                <h2 class="text-2xl font-bold text-white">Batería Agotada (0%)</h2>
+                <p class="text-sm text-zinc-400 text-center max-w-md">Conecta el cargador MagSafe a tu laptop en la habitación para encenderla de nuevo.</p>
+                <button onclick="connectChargerAndBoot()" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-xl shadow-lg transition">⚡ Conectar Cargador y Encender</button>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <button onclick="showAppleStore()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded-xl border border-white/10">🏪 Ir a la Tienda Apple</button>
+            <button onclick="showChargerUI()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded-xl border border-white/10">🔌 Conectar Cargador</button>
+        </div>
+    </div>
+
+    <!-- ESCRITORIO DE MACOS -->
+    <div id="desktop-screen" class="h-full w-full flex flex-col justify-between relative">
+        
+        <!-- macOS Top Menu Bar -->
+        <div class="h-7 w-full macos-glass z-50 flex items-center justify-between px-4 text-xs font-medium text-white/90 border-b border-white/10 relative">
+            <div class="flex items-center gap-4">
+                <!-- Menú Apple -->
+                <div class="relative">
+                    <i class="fa-brands fa-apple text-sm hover:text-sky-400 cursor-pointer" onclick="toggleDropdown(event, 'menu-apple')"></i>
+                    <div id="menu-apple" class="dropdown-menu hidden left-0">
+                        <div class="dropdown-item font-semibold" onclick="alert('macOS Cloud Simulator v3.0 Ultra')">Acerca de esta Mac</div>
+                        <div class="h-[1px] bg-white/10 my-1"></div>
+                        <div class="dropdown-item" onclick="openApp('settings')">Preferencias del Sistema</div>
+                        <div class="dropdown-item text-amber-400" onclick="goTo3DWorld()">🚪 Salir a la Habitación (Modo 3D)</div>
+                        <div class="dropdown-item text-rose-400" onclick="shutdownLaptop()">Apagar Laptop...</div>
+                        <div class="dropdown-item" onclick="location.reload()">Reiniciar...</div>
+                    </div>
                 </div>
-                <span class="text-[11px] font-medium text-white drop-shadow-md text-center">Safari</span>
+
+                <div class="relative">
+                    <span class="font-bold cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-finder')">Finder</span>
+                    <div id="menu-finder" class="dropdown-menu hidden left-0">
+                        <div class="dropdown-item" onclick="openApp('finder')">Abrir Finder</div>
+                        <div class="dropdown-item" onclick="alert('Vaciar Papelera de Reciclaje')">Vaciar Papelera</div>
+                    </div>
+                </div>
+
+                <div class="relative hidden sm:inline">
+                    <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-archivo')">Archivo</span>
+                    <div id="menu-archivo" class="dropdown-menu hidden left-0">
+                        <div class="dropdown-item" onclick="openApp('terminal')">Nueva Terminal <span>⌘T</span></div>
+                        <div class="dropdown-item" onclick="openApp('safari')">Pestaña de Safari <span>⌘N</span></div>
+                    </div>
+                </div>
+
+                <div class="relative hidden sm:inline">
+                    <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-edicion')">Edición</span>
+                    <div id="menu-edicion" class="dropdown-menu hidden left-0">
+                        <div class="dropdown-item" onclick="alert('Deshacer')">Deshacer <span>⌘Z</span></div>
+                        <div class="dropdown-item" onclick="alert('Copiar')">Copiar <span>⌘C</span></div>
+                    </div>
+                </div>
+
+                <div class="relative hidden sm:inline">
+                    <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-vis')">Visualización</span>
+                    <div id="menu-vis" class="dropdown-menu hidden left-0">
+                        <div class="dropdown-item" onclick="document.body.requestFullscreen()">Pantalla Completa</div>
+                    </div>
+                </div>
+
+                <div class="relative hidden sm:inline">
+                    <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-ventana')">Ventana</span>
+                    <div id="menu-ventana" class="dropdown-menu hidden left-0">
+                        <div class="dropdown-item" onclick="closeAllApps()">Cerrar Todo</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('terminal')">
-                <div class="w-14 h-14 rounded-2xl bg-black border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
-                    <i class="fa-solid fa-terminal text-emerald-400"></i>
+            <!-- Controles de Estado (Wi-Fi y Batería) -->
+            <div class="flex items-center gap-4">
+                <!-- WiFi Menu Dropdown -->
+                <div class="relative">
+                    <i id="wifi-icon" class="fa-solid fa-wifi cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'wifi-menu')"></i>
+                    <div id="wifi-menu" class="dropdown-menu hidden right-0 w-64 p-2">
+                        <span class="text-[10px] text-zinc-400 uppercase font-bold px-2">Redes Wi-Fi Cercanas</span>
+                        <div class="h-[1px] bg-white/10 my-1"></div>
+                        
+                        <div onclick="connectMcDonaldsWifi()" class="dropdown-item rounded-lg my-1 bg-rose-500/20 hover:bg-rose-500 text-rose-300">
+                            <span class="font-bold">mcdonals wifi</span>
+                            <span class="text-[9px] bg-rose-600 text-white px-1.5 py-0.5 rounded">FREE (HACKEAO 🤣)</span>
+                        </div>
+
+                        <div onclick="connectProtectedWifi('wifi del vecino', 'vecino123')" class="dropdown-item rounded-lg">
+                            <span>wifi del vecino</span>
+                            <i class="fa-solid fa-lock text-[10px]"></i>
+                        </div>
+
+                        <div onclick="connectProtectedWifi('tu wifi.com', 'admin123')" class="dropdown-item rounded-lg">
+                            <span>tu wifi.com</span>
+                            <i class="fa-solid fa-lock text-[10px]"></i>
+                        </div>
+
+                        <div onclick="connectProtectedWifi('pagatumi3rd#', 'paga123')" class="dropdown-item rounded-lg">
+                            <span>pagatumi3rd#</span>
+                            <i class="fa-solid fa-lock text-[10px]"></i>
+                        </div>
+                    </div>
                 </div>
-                <span class="text-[11px] font-medium text-white drop-shadow-md text-center">Terminal</span>
+
+                <!-- Battery Menu -->
+                <div class="relative flex items-center gap-1 cursor-pointer" onclick="toggleBatteryCharging()">
+                    <span id="battery-level-text" class="text-[10px] font-mono">100%</span>
+                    <i id="battery-icon" class="fa-solid fa-battery-full text-emerald-400"></i>
+                </div>
+
+                <span id="clock-display">12:00 PM</span>
+            </div>
+        </div>
+
+        <!-- Área del Escritorio -->
+        <div id="desktop-area" class="flex-grow relative overflow-hidden p-6">
+            <div class="grid grid-cols-1 gap-6 w-20">
+                <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('obs')">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-zinc-800 to-zinc-600 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
+                        <i class="fa-solid fa-video text-red-400"></i>
+                    </div>
+                    <span class="text-[11px] font-medium text-white drop-shadow-md text-center">OBS Studio</span>
+                </div>
+                
+                <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('vmware')">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-600 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
+                        <i class="fa-solid fa-server text-white"></i>
+                    </div>
+                    <span class="text-[11px] font-medium text-white drop-shadow-md text-center">VMware</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('safari')">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
+                        <i class="fa-solid fa-compass text-white"></i>
+                    </div>
+                    <span class="text-[11px] font-medium text-white drop-shadow-md text-center">Safari</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('terminal')">
+                    <div class="w-14 h-14 rounded-2xl bg-black border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
+                        <i class="fa-solid fa-terminal text-emerald-400"></i>
+                    </div>
+                    <span class="text-[11px] font-medium text-white drop-shadow-md text-center">Terminal</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('notes')">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
+                        <i class="fa-solid fa-note-sticky text-zinc-900"></i>
+                    </div>
+                    <span class="text-[11px] font-medium text-white drop-shadow-md text-center">Notas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- APP: OBS Studio -->
+        <div id="app-obs" class="macos-window hidden w-[700px] h-[480px] z-40 top-16 left-20">
+            <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('obs')"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <span class="text-xs font-semibold text-white/80">OBS Studio Web — Captura Real</span>
+                <i class="fa-solid fa-video text-red-400 text-xs"></i>
+            </div>
+            <div class="flex-grow bg-black flex flex-col justify-between p-4 relative">
+                <div class="w-full h-[330px] bg-zinc-950 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center relative">
+                    <video id="obs-preview" class="w-full h-full object-contain" autoplay playsinline muted></video>
+                    <div id="obs-placeholder" class="absolute text-xs text-white/40 font-mono">Haz clic en "Iniciar Captura"</div>
+                </div>
+                <div class="flex justify-between items-center pt-2">
+                    <div class="flex gap-2">
+                        <button onclick="startObsCapture()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded-lg border border-white/10 text-sky-400">Iniciar Captura</button>
+                        <button onclick="startObsRecording()" id="rec-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-xs font-bold rounded-lg text-white">Iniciar Grabación</button>
+                    </div>
+                    <span id="obs-status" class="text-[10px] font-mono text-white/50">Estado: Listo</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- APP: VMware Virtual Machine (WASM v86) -->
+        <div id="app-vmware" class="macos-window hidden w-[720px] h-[500px] z-40 top-12 left-32">
+            <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('vmware')"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <span class="text-xs font-semibold text-white/80">VMware Workstation — Linux WASM x86</span>
+                <i class="fa-solid fa-server text-indigo-400 text-xs"></i>
+            </div>
+            <div class="flex-grow bg-black flex flex-col relative overflow-hidden">
+                <div id="v86_container" class="w-full flex-grow bg-black font-mono text-xs text-green-400 p-2 overflow-auto">
+                    <div id="screen_container" class="w-full h-full">
+                        <div style="white-space: pre; font-family: monospace;"></div>
+                        <canvas class="hidden"></canvas>
+                    </div>
+                </div>
+                <div class="h-10 bg-zinc-900 px-4 flex items-center justify-between border-t border-white/10">
+                    <button onclick="startVMwareLinux()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-md text-white">Power On VM (Linux)</button>
+                    <span id="vm-status" class="text-[10px] font-mono text-white/50">Estado: Apagado</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- APP: Safari Browser -->
+        <div id="app-safari" class="macos-window hidden w-[800px] h-[520px] z-40 top-20 left-40">
+            <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('safari')"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <div class="flex-grow mx-6 bg-zinc-800 rounded-lg px-3 py-1 flex items-center gap-2 border border-white/10">
+                    <i class="fa-solid fa-lock text-[10px] text-emerald-400"></i>
+                    <input id="safari-url" type="text" value="https://wikipedia.org" class="bg-transparent border-none outline-none text-xs w-full text-white font-mono" onkeypress="if(event.key==='Enter') navigateSafari()">
+                </div>
+                <i class="fa-solid fa-compass text-sky-400 text-xs"></i>
+            </div>
+            <div class="flex-grow bg-white">
+                <iframe id="safari-frame" src="https://wikipedia.org" class="w-full h-full border-none"></iframe>
+            </div>
+        </div>
+
+        <!-- APP: Finder -->
+        <div id="app-finder" class="macos-window hidden w-[700px] h-[450px] z-40 top-28 left-60">
+            <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('finder')"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <span class="text-xs font-semibold text-white/80">Finder — Mis Archivos</span>
+                <i class="fa-solid fa-folder-open text-sky-400 text-xs"></i>
+            </div>
+            <div class="flex-grow flex bg-zinc-950">
+                <div class="w-48 bg-zinc-900/50 p-3 border-r border-white/10 text-xs flex flex-col gap-2">
+                    <span class="text-[10px] text-white/40 uppercase font-bold">Favoritos</span>
+                    <div class="p-2 bg-white/10 rounded-lg flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-house text-sky-400"></i> Inicio</div>
+                    <div class="p-2 hover:bg-white/5 rounded-lg flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-file text-emerald-400"></i> Documentos</div>
+                </div>
+                <div class="flex-grow p-4 grid grid-cols-4 gap-4 align-content-start">
+                    <div class="flex flex-col items-center gap-1 cursor-pointer">
+                        <i class="fa-solid fa-file-code text-3xl text-amber-400"></i>
+                        <span class="text-[10px] text-white">index.html</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- APP: Terminal ZSH -->
+        <div id="app-terminal" class="macos-window hidden w-[650px] h-[400px] z-40 top-24 left-48">
+            <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('terminal')"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <span class="text-xs font-semibold text-white/80">Terminal — zsh</span>
+                <i class="fa-solid fa-terminal text-emerald-400 text-xs"></i>
+            </div>
+            <div class="flex-grow bg-zinc-950 p-4 font-mono text-xs flex flex-col justify-between overflow-y-auto" id="term-body">
+                <div id="term-output" class="space-y-1 text-emerald-400">
+                    <div>Last login: Wed Oct 28 2026 on ttys000</div>
+                    <div>Type <span class="text-white font-bold">'help'</span> for available commands.</div>
+                </div>
+                <div class="flex gap-2 items-center mt-2">
+                    <span class="text-sky-400 font-bold">mac@cloud-sim %</span>
+                    <input id="term-input" type="text" class="bg-transparent border-none outline-none text-white w-full font-mono" onkeypress="handleTerminalCommand(event)">
+                </div>
+            </div>
+        </div>
+
+        <!-- APP: Notas -->
+        <div id="app-notes" class="macos-window hidden w-[500px] h-[350px] z-40 top-32 left-80">
+            <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('notes')"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <span class="text-xs font-semibold text-white/80">Notas Rápidas</span>
+                <i class="fa-solid fa-note-sticky text-amber-400 text-xs"></i>
+            </div>
+            <textarea class="flex-grow bg-zinc-950 p-4 text-xs font-mono text-amber-200 outline-none resize-none border-none" placeholder="Escribe tus notas aquí..."></textarea>
+        </div>
+
+        <!-- macOS Dock -->
+        <div class="w-full flex justify-center pb-3 z-50">
+            <div class="macos-glass px-4 py-2 rounded-2xl flex items-center gap-4 shadow-2xl border border-white/20">
+                <div onclick="openApp('finder')" class="dock-icon cursor-pointer">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-600 border border-white/20 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-folder-open text-white"></i>
+                    </div>
+                </div>
+                <div onclick="openApp('safari')" class="dock-icon cursor-pointer">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 border border-white/20 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-compass text-white"></i>
+                    </div>
+                </div>
+                <div onclick="openApp('obs')" class="dock-icon cursor-pointer">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-zinc-800 to-zinc-600 border border-white/20 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-video text-red-400"></i>
+                    </div>
+                </div>
+                <div onclick="openApp('vmware')" class="dock-icon cursor-pointer">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-600 border border-white/20 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-server text-white"></i>
+                    </div>
+                </div>
+                <div onclick="openApp('terminal')" class="dock-icon cursor-pointer">
+                    <div class="w-12 h-12 rounded-2xl bg-black border border-white/20 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-terminal text-emerald-400"></i>
+                    </div>
+                </div>
+                <div onclick="openApp('notes')" class="dock-icon cursor-pointer">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-500 border border-white/20 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-note-sticky text-zinc-900"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- APP: OBS Studio -->
-    <div id="app-obs" class="macos-window hidden w-[700px] h-[480px] z-40 top-16 left-20">
-        <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
-            <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('obs')"></div>
-                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-            </div>
-            <span class="text-xs font-semibold text-white/80">OBS Studio Web — Captura Real</span>
-            <i class="fa-solid fa-video text-red-400 text-xs"></i>
-        </div>
-        <div class="flex-grow bg-black flex flex-col justify-between p-4 relative">
-            <div class="w-full h-[330px] bg-zinc-950 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center relative">
-                <video id="obs-preview" class="w-full h-full object-contain" autoplay playsinline muted></video>
-                <div id="obs-placeholder" class="absolute text-xs text-white/40 font-mono">Haz clic en "Iniciar Captura"</div>
-            </div>
-            <div class="flex justify-between items-center pt-2">
-                <div class="flex gap-2">
-                    <button onclick="startObsCapture()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded-lg border border-white/10 text-sky-400">Iniciar Captura</button>
-                    <button onclick="startObsRecording()" id="rec-btn" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-xs font-bold rounded-lg text-white">Iniciar Grabación</button>
-                </div>
-                <span id="obs-status" class="text-[10px] font-mono text-white/50">Estado: Listo</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- APP: VMware Virtual Machine (WASM v86) -->
-    <div id="app-vmware" class="macos-window hidden w-[720px] h-[500px] z-40 top-12 left-32">
-        <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
-            <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('vmware')"></div>
-                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-            </div>
-            <span class="text-xs font-semibold text-white/80">VMware Workstation — Linux WASM x86</span>
-            <i class="fa-solid fa-server text-indigo-400 text-xs"></i>
-        </div>
-        <div class="flex-grow bg-black flex flex-col relative overflow-hidden">
-            <div id="v86_container" class="w-full flex-grow bg-black font-mono text-xs text-green-400 p-2 overflow-auto">
-                <div id="screen_container" class="w-full h-full">
-                    <div style="white-space: pre; font-family: monospace;"></div>
-                    <canvas class="hidden"></canvas>
-                </div>
-            </div>
-            <div class="h-10 bg-zinc-900 px-4 flex items-center justify-between border-t border-white/10">
-                <button onclick="startVMwareLinux()" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold rounded-md text-white">Power On VM (Linux)</button>
-                <span id="vm-status" class="text-[10px] font-mono text-white/50">Estado: Apagado</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- APP: Safari Browser -->
-    <div id="app-safari" class="macos-window hidden w-[800px] h-[520px] z-40 top-20 left-40">
-        <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
-            <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('safari')"></div>
-                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-            </div>
-            <div class="flex-grow mx-6 bg-zinc-800 rounded-lg px-3 py-1 flex items-center gap-2 border border-white/10">
-                <i class="fa-solid fa-lock text-[10px] text-emerald-400"></i>
-                <input id="safari-url" type="text" value="https://wikipedia.org" class="bg-transparent border-none outline-none text-xs w-full text-white font-mono" onkeypress="if(event.key==='Enter') navigateSafari()">
-            </div>
-            <i class="fa-solid fa-compass text-sky-400 text-xs"></i>
-        </div>
-        <div class="flex-grow bg-white">
-            <iframe id="safari-frame" src="https://wikipedia.org" class="w-full h-full border-none"></iframe>
-        </div>
-    </div>
-
-    <!-- APP: Finder -->
-    <div id="app-finder" class="macos-window hidden w-[700px] h-[450px] z-40 top-28 left-60">
-        <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
-            <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('finder')"></div>
-                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-            </div>
-            <span class="text-xs font-semibold text-white/80">Finder — Mis Archivos</span>
-            <i class="fa-solid fa-folder-open text-sky-400 text-xs"></i>
-        </div>
-        <div class="flex-grow flex bg-zinc-950">
-            <div class="w-48 bg-zinc-900/50 p-3 border-r border-white/10 text-xs flex flex-col gap-2">
-                <span class="text-[10px] text-white/40 uppercase font-bold">Favoritos</span>
-                <div class="p-2 bg-white/10 rounded-lg flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-house text-sky-400"></i> Inicio</div>
-                <div class="p-2 hover:bg-white/5 rounded-lg flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-file text-emerald-400"></i> Documentos</div>
-            </div>
-            <div class="flex-grow p-4 grid grid-cols-4 gap-4 align-content-start">
-                <div class="flex flex-col items-center gap-1 cursor-pointer">
-                    <i class="fa-solid fa-file-code text-3xl text-amber-400"></i>
-                    <span class="text-[10px] text-white">index.html</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- APP: Terminal ZSH -->
-    <div id="app-terminal" class="macos-window hidden w-[650px] h-[400px] z-40 top-24 left-48">
-        <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
-            <div class="flex items-center gap-2">
-                <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('terminal')"></div>
-                <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-            </div>
-            <span class="text-xs font-semibold text-white/80">Terminal — zsh</span>
-            <i class="fa-solid fa-terminal text-emerald-400 text-xs"></i>
-        </div>
-        <div class="flex-grow bg-zinc-950 p-4 font-mono text-xs flex flex-col justify-between overflow-y-auto" id="term-body">
-            <div id="term-output" class="space-y-1 text-emerald-400">
-                <div>Last login: Wed Oct 28 2026 on ttys000</div>
-                <div>Type <span class="text-white font-bold">'help'</span> for available commands.</div>
-            </div>
-            <div class="flex gap-2 items-center mt-2">
-                <span class="text-sky-400 font-bold">mac@cloud-sim %</span>
-                <input id="term-input" type="text" class="bg-transparent border-none outline-none text-white w-full font-mono" onkeypress="handleTerminalCommand(event)">
-            </div>
-        </div>
-    </div>
-
-    <!-- macOS Dock -->
-    <div class="w-full flex justify-center pb-3 z-50">
-        <div class="macos-glass px-4 py-2 rounded-2xl flex items-center gap-4 shadow-2xl border border-white/20">
-            <div onclick="openApp('finder')" class="dock-icon cursor-pointer">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-600 border border-white/20 flex items-center justify-center text-xl shadow-lg">
-                    <i class="fa-solid fa-folder-open text-white"></i>
-                </div>
-            </div>
-            <div onclick="openApp('safari')" class="dock-icon cursor-pointer">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-400 border border-white/20 flex items-center justify-center text-xl shadow-lg">
-                    <i class="fa-solid fa-compass text-white"></i>
-                </div>
-            </div>
-            <div onclick="openApp('obs')" class="dock-icon cursor-pointer">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-zinc-800 to-zinc-600 border border-white/20 flex items-center justify-center text-xl shadow-lg">
-                    <i class="fa-solid fa-video text-red-400"></i>
-                </div>
-            </div>
-            <div onclick="openApp('vmware')" class="dock-icon cursor-pointer">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-600 border border-white/20 flex items-center justify-center text-xl shadow-lg">
-                    <i class="fa-solid fa-server text-white"></i>
-                </div>
-            </div>
-            <div onclick="openApp('terminal')" class="dock-icon cursor-pointer">
-                <div class="w-12 h-12 rounded-2xl bg-black border border-white/20 flex items-center justify-center text-xl shadow-lg">
-                    <i class="fa-solid fa-terminal text-emerald-400"></i>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- AUDIO EFFECTS -->
+    <audio id="snd-explosion" src="https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3"></audio>
 
     <script>
+        // BOOT ANIMATION
+        window.addEventListener('load', () => {
+            const progress = document.getElementById('boot-progress');
+            let w = 0;
+            const interval = setInterval(() => {
+                w += 10;
+                progress.style.width = `${w}%`;
+                if (w >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('boot-screen').style.opacity = '0';
+                        setTimeout(() => document.getElementById('boot-screen').style.display = 'none', 1000);
+                    }, 300);
+                }
+            }, 100);
+        });
+
+        // RELOJ
         setInterval(() => {
             const now = new Date();
             document.getElementById('clock-display').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }, 1000);
 
+        // BATERÍA SIMULADA
+        let batteryLevel = 100;
+        let isCharging = false;
+        setInterval(() => {
+            if (!isCharging && batteryLevel > 0) {
+                batteryLevel--;
+                updateBatteryUI();
+                if (batteryLevel === 0) {
+                    triggerLowBatteryShutdown();
+                }
+            } else if (isCharging && batteryLevel < 100) {
+                batteryLevel += 5;
+                if (batteryLevel > 100) batteryLevel = 100;
+                updateBatteryUI();
+            }
+        }, 4000);
+
+        function updateBatteryUI() {
+            document.getElementById('battery-level-text').innerText = `${batteryLevel}%`;
+            const icon = document.getElementById('battery-icon');
+            if (isCharging) {
+                icon.className = 'fa-solid fa-battery-charging text-sky-400';
+            } else if (batteryLevel > 50) {
+                icon.className = 'fa-solid fa-battery-full text-emerald-400';
+            } else if (batteryLevel > 20) {
+                icon.className = 'fa-solid fa-battery-half text-amber-400';
+            } else {
+                icon.className = 'fa-solid fa-battery-quarter text-rose-500';
+            }
+        }
+
+        function toggleBatteryCharging() {
+            isCharging = !isCharging;
+            updateBatteryUI();
+            alert(isCharging ? '🔌 Cargador conectado' : '🔋 Cargador desconectado');
+        }
+
+        function triggerLowBatteryShutdown() {
+            alert('🪫 Batería agotada (0%). La laptop se apagarás.');
+            goTo3DWorld();
+            document.getElementById('charger-ui').classList.remove('hidden');
+        }
+
+        // WI-FI LOGIC & EXPLOSIÓN
+        function connectMcDonaldsWifi() {
+            const screen = document.getElementById('desktop-screen');
+            screen.classList.add('exploding');
+            document.getElementById('snd-explosion').play();
+            
+            setTimeout(() => {
+                screen.classList.remove('exploding');
+                alert('💥 ¡LA LAPTOP EXPLOTÓ POR USAR EL WI-FI DE MCDONALD\'S FREE HACKEAO! 🤣');
+                goTo3DWorld();
+                showAppleStore();
+            }, 1200);
+        }
+
+        function connectProtectedWifi(name, correctPass) {
+            const pass = prompt(`Ingresa la contraseña para "${name}":`);
+            if (pass === correctPass) {
+                alert(`✅ Conectado exitosamente a "${name}".`);
+                document.getElementById('wifi-icon').className = 'fa-solid fa-wifi text-emerald-400';
+            } else if (pass !== null) {
+                alert('❌ Contraseña incorrecta.');
+            }
+        }
+
+        // MUNDO 3D & THREE.JS
+        let scene, camera, renderer, laptopMesh;
+        function init3DRoom() {
+            const container = document.getElementById('room-canvas');
+            if (renderer) return;
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Luz
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            const dirLight = new THREE.DirectionalLight(0x007aff, 1);
+            dirLight.position.set(5, 10, 7);
+            scene.add(dirLight);
+
+            // Laptop Mesh (Representación 3D)
+            const geometry = new THREE.BoxGeometry(2.4, 0.1, 1.6);
+            const material = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8, roughness: 0.2 });
+            laptopMesh = new THREE.Mesh(geometry, material);
+            scene.add(laptopMesh);
+
+            camera.position.set(0, 2, 3);
+            camera.lookAt(0, 0, 0);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                if (laptopMesh) laptopMesh.rotation.y += 0.005;
+                renderer.render(scene, camera);
+            }
+            animate();
+        }
+
+        function goTo3DWorld() {
+            document.getElementById('world-3d').classList.remove('hidden');
+            init3DRoom();
+        }
+
+        function returnToLaptop() {
+            document.getElementById('world-3d').classList.add('hidden');
+            document.getElementById('apple-store-ui').classList.add('hidden');
+            document.getElementById('charger-ui').classList.add('hidden');
+        }
+
+        function showAppleStore() {
+            document.getElementById('apple-store-ui').classList.remove('hidden');
+        }
+
+        function buyNewLaptop() {
+            alert('🛍️ ¡Felicidades! Compraste una nueva MacBook Pro por $1,200.');
+            batteryLevel = 100;
+            isCharging = false;
+            updateBatteryUI();
+            returnToLaptop();
+        }
+
+        function showChargerUI() {
+            document.getElementById('charger-ui').classList.remove('hidden');
+        }
+
+        function connectChargerAndBoot() {
+            batteryLevel = 100;
+            isCharging = true;
+            updateBatteryUI();
+            returnToLaptop();
+            alert('⚡ Cargador conectado. Reencendiendo laptop...');
+        }
+
+        function shutdownLaptop() {
+            document.getElementById('boot-screen').style.display = 'flex';
+            document.getElementById('boot-screen').style.opacity = '1';
+            document.getElementById('boot-progress').style.width = '0%';
+            setTimeout(() => alert('💻 Laptop apagada. Haz clic en reiniciar o recargar para encender.'), 500);
+        }
+
+        // DROPDOWNS & VENTANAS
         function toggleDropdown(e, id) {
             e.stopPropagation();
             closeAllDropdowns();
@@ -361,7 +659,7 @@
         }
 
         function closeAllApps() {
-            ['obs', 'safari', 'finder', 'vmware', 'terminal'].forEach(closeApp);
+            ['obs', 'safari', 'finder', 'vmware', 'terminal', 'notes'].forEach(closeApp);
         }
 
         function navigateSafari() {
@@ -413,7 +711,7 @@
   OS: macOS Ventura 13.0 (Web)
   Host: Vercel Serverless CDN
   Kernel: WASM v86 x86
-  Uptime: Online
+  Battery: ${batteryLevel}%
   Shell: zsh 5.8
 </pre>`;
                 } else if (cmd === 'ls') {
