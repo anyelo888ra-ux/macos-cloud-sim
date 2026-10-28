@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>macOS Cloud Simulator — Web OS Experience</title>
+    <title>macOS Cloud Simulator — Web OS Ultra Edition</title>
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -103,6 +103,13 @@
         .exploding {
             animation: explosion-shake 0.15s infinite;
         }
+
+        /* Syntax Highlight Styles for VS Code */
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+        .code-comment { color: #6a9955; }
+        .code-tag { color: #808080; }
+        .code-attr { color: #9cdcfe; }
     </style>
 </head>
 <body class="h-screen w-screen relative flex flex-col justify-between overflow-hidden" onclick="closeAllDropdowns(event)">
@@ -115,28 +122,46 @@
         </div>
     </div>
 
-    <!-- MUNDO 3D (HABITACIÓN Y TIENDA APPLE) -->
-    <div id="world-3d" class="fixed inset-0 bg-zinc-950 z-[150] hidden flex flex-col items-center justify-between p-8">
-        <div class="w-full flex justify-between items-center bg-black/60 p-4 rounded-2xl border border-white/10">
-            <h1 class="text-lg font-bold text-sky-400 font-mono"><i class="fa-solid fa-cube mr-2"></i>Mundo Real 3D — Habitación & Tienda Apple</h1>
-            <button onclick="returnToLaptop()" id="btn-back-laptop" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 font-bold text-xs rounded-xl transition">Volver a Usar Laptop 💻</button>
+    <!-- MUNDO 3D (HABITACIÓN, CASA Y CALLE) -->
+    <div id="world-3d" class="fixed inset-0 bg-zinc-950 z-[150] hidden flex flex-col items-center justify-between p-4">
+        <div class="w-full flex justify-between items-center bg-black/80 px-6 py-3 rounded-2xl border border-white/10 z-10">
+            <div class="flex items-center gap-4">
+                <h1 class="text-sm font-bold text-sky-400 font-mono"><i class="fa-solid fa-person-walking mr-2"></i>Mundo 3D 1ª Persona (WASD)</h1>
+                <span id="player-location-badge" class="px-3 py-1 bg-zinc-800 text-xs text-amber-300 font-mono rounded-lg border border-white/10">Ubicación: Mi Habitación (Piso 2)</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-mono text-emerald-400 font-bold bg-emerald-950/60 px-3 py-1 rounded-lg border border-emerald-500/30">Saldo: $<span id="world-money-display">0</span></span>
+                <button onclick="returnToLaptop()" id="btn-back-laptop" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 font-bold text-xs rounded-xl transition">Usar Mi MacBook 💻</button>
+            </div>
         </div>
 
-        <div id="canvas-3d-container" class="w-full flex-grow my-4 rounded-3xl overflow-hidden border border-white/10 relative flex items-center justify-center bg-zinc-900">
-            <div id="room-canvas" class="w-full h-full"></div>
+        <div id="canvas-3d-container" class="w-full flex-grow my-2 rounded-3xl overflow-hidden border border-white/10 relative flex items-center justify-center bg-zinc-900">
+            <div id="room-canvas" class="w-full h-full cursor-pointer"></div>
+
+            <!-- Controles en pantalla y guía -->
+            <div class="absolute bottom-4 left-4 bg-black/70 p-3 rounded-xl border border-white/10 text-[11px] font-mono text-white/80 space-y-1">
+                <div>🎮 Controles: <span class="text-sky-400 font-bold">W A S D</span> para moverte | Interactúa con los objetos</div>
+                <div id="mom-warning" class="text-rose-400 font-bold hidden">⚠️ ¡CUIDADO! Mamá está patrullando cerca...</div>
+            </div>
+
+            <div class="absolute bottom-4 right-4 flex gap-2">
+                <button onclick="interactWith3DObject('macbook')" id="btn-use-mac" class="px-3 py-2 bg-sky-600 hover:bg-sky-500 text-xs font-bold rounded-lg shadow-lg">💻 Usar Mi MacBook</button>
+                <button onclick="interactWith3DObject('mom-laptop')" id="btn-use-win10" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-xs font-bold rounded-lg shadow-lg hidden">🪟 Usar Laptop de Mamá (Win10)</button>
+                <button onclick="interactWith3DObject('apple-store')" id="btn-buy-mac" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg shadow-lg hidden">🏪 Comprar Laptop Apple ($1200)</button>
+            </div>
 
             <!-- Interfaz overlay en mundo 3D -->
-            <div id="apple-store-ui" class="absolute inset-0 bg-black/80 hidden flex flex-col items-center justify-center gap-6 p-6">
+            <div id="apple-store-ui" class="absolute inset-0 bg-black/80 hidden flex flex-col items-center justify-center gap-6 p-6 z-20">
                 <i class="fa-brands fa-apple text-6xl text-white"></i>
                 <h2 class="text-2xl font-bold text-white">Apple Store Oficial</h2>
-                <p class="text-sm text-zinc-400 text-center max-w-md">¡Tu MacBook explotó por usar el Wi-Fi de McDonald's! Compra un reemplazo para volver a usar tu macOS Cloud Simulator.</p>
+                <p class="text-sm text-zinc-400 text-center max-w-md">¡Tu MacBook explotó! Compra un reemplazo con el dinero que ganas publicando juegos en PlayFree.com.</p>
                 <div class="bg-zinc-900 p-6 rounded-2xl border border-white/10 flex flex-col items-center gap-4">
                     <span class="text-xl font-bold text-emerald-400">MacBook Pro M3 — $1,200</span>
                     <button onclick="buyNewLaptop()" class="px-6 py-3 bg-sky-500 hover:bg-sky-400 text-white font-bold rounded-xl shadow-lg transition">Comprar Nueva MacBook 🛍️</button>
                 </div>
             </div>
 
-            <div id="charger-ui" class="absolute inset-0 bg-black/80 hidden flex flex-col items-center justify-center gap-6 p-6">
+            <div id="charger-ui" class="absolute inset-0 bg-black/80 hidden flex flex-col items-center justify-center gap-6 p-6 z-20">
                 <i class="fa-solid fa-battery-empty text-6xl text-rose-500"></i>
                 <h2 class="text-2xl font-bold text-white">Batería Agotada (0%)</h2>
                 <p class="text-sm text-zinc-400 text-center max-w-md">Conecta el cargador MagSafe a tu laptop en la habitación para encenderla de nuevo.</p>
@@ -145,8 +170,51 @@
         </div>
 
         <div class="flex gap-4">
-            <button onclick="showAppleStore()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded-xl border border-white/10">🏪 Ir a la Tienda Apple</button>
-            <button onclick="showChargerUI()" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded-xl border border-white/10">🔌 Conectar Cargador</button>
+            <button onclick="teleport3D('room')" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded-xl border border-white/10">🛌 Mi Habitación</button>
+            <button onclick="teleport3D('mom-room')" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded-xl border border-white/10">🚪 Cuarto de Mamá</button>
+            <button onclick="teleport3D('street')" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-xs font-bold rounded-xl border border-white/10">🏙️ Salir a la Calle</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA SECUNDARIA: LAPTOP WINDOWS 10 DE MAMÁ -->
+    <div id="win10-screen" class="fixed inset-0 bg-sky-900 z-[160] hidden flex flex-col justify-between p-0 overflow-hidden font-sans">
+        <!-- Windows 10 Desktop Area -->
+        <div class="flex-grow relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2000&auto=format&fit=crop');">
+            <!-- Iconos de Windows 10 -->
+            <div class="p-4 grid grid-cols-1 gap-6 w-24">
+                <div class="flex flex-col items-center gap-1 cursor-pointer group p-2 hover:bg-white/10 rounded" onclick="alert('Este Equipo — Windows 10 Enterprise (Laptop de Trabajo de Mamá)')">
+                    <i class="fa-solid fa-desktop text-3xl text-sky-300 drop-shadow"></i>
+                    <span class="text-[11px] text-white drop-shadow text-center">Este Equipo</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 cursor-pointer group p-2 hover:bg-white/10 rounded" onclick="openWin10Edge()">
+                    <i class="fa-brands fa-edge text-3xl text-blue-400 drop-shadow"></i>
+                    <span class="text-[11px] text-white drop-shadow text-center">Microsoft Edge</span>
+                </div>
+            </div>
+
+            <!-- Ventana Edge en Windows 10 -->
+            <div id="win10-edge-window" class="absolute top-10 left-20 w-[700px] h-[420px] bg-zinc-900 border border-zinc-700 rounded-t-lg shadow-2xl flex flex-col hidden">
+                <div class="bg-zinc-800 px-4 py-2 flex justify-between items-center text-xs text-white">
+                    <span>Microsoft Edge — Navegador de Mamá</span>
+                    <button onclick="document.getElementById('win10-edge-window').classList.add('hidden')" class="text-rose-400 hover:text-rose-300 font-bold">✕</button>
+                </div>
+                <iframe src="https://bing.com" class="flex-grow w-full border-none"></iframe>
+            </div>
+        </div>
+
+        <!-- Windows 10 Taskbar -->
+        <div class="h-10 bg-zinc-900/90 backdrop-blur border-t border-zinc-700/50 flex justify-between items-center px-2 z-50">
+            <div class="flex items-center gap-1">
+                <button onclick="alert('Menú Inicio de Windows 10')" class="p-2 hover:bg-white/10 text-sky-400 text-lg transition"><i class="fa-brands fa-windows"></i></button>
+                <div class="bg-zinc-800/80 px-3 py-1 rounded text-xs text-zinc-400 flex items-center gap-2 w-48">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Escribe aquí para buscar</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 text-xs text-white pr-2">
+                <button onclick="exitWin10To3D()" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded">Cerrar Laptop de Mamá 🚪</button>
+                <span id="win10-clock">12:00 PM</span>
+            </div>
         </div>
     </div>
 
@@ -160,9 +228,9 @@
                 <div class="relative">
                     <i class="fa-brands fa-apple text-sm hover:text-sky-400 cursor-pointer" onclick="toggleDropdown(event, 'menu-apple')"></i>
                     <div id="menu-apple" class="dropdown-menu hidden left-0">
-                        <div class="dropdown-item font-semibold" onclick="alert('macOS Cloud Simulator v3.0 Ultra')">Acerca de esta Mac</div>
+                        <div class="dropdown-item font-semibold" onclick="alert('macOS Cloud Simulator v3.5 Ultra Edition')">Acerca de esta Mac</div>
                         <div class="h-[1px] bg-white/10 my-1"></div>
-                        <div class="dropdown-item" onclick="openApp('settings')">Preferencias del Sistema</div>
+                        <div class="dropdown-item" onclick="openApp('vscode')">Abrir Código en VS Code</div>
                         <div class="dropdown-item text-amber-400" onclick="goTo3DWorld()">🚪 Salir a la Habitación (Modo 3D)</div>
                         <div class="dropdown-item text-rose-400" onclick="shutdownLaptop()">Apagar Laptop...</div>
                         <div class="dropdown-item" onclick="location.reload()">Reiniciar...</div>
@@ -181,22 +249,7 @@
                     <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-archivo')">Archivo</span>
                     <div id="menu-archivo" class="dropdown-menu hidden left-0">
                         <div class="dropdown-item" onclick="openApp('terminal')">Nueva Terminal <span>⌘T</span></div>
-                        <div class="dropdown-item" onclick="openApp('safari')">Pestaña de Safari <span>⌘N</span></div>
-                    </div>
-                </div>
-
-                <div class="relative hidden sm:inline">
-                    <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-edicion')">Edición</span>
-                    <div id="menu-edicion" class="dropdown-menu hidden left-0">
-                        <div class="dropdown-item" onclick="alert('Deshacer')">Deshacer <span>⌘Z</span></div>
-                        <div class="dropdown-item" onclick="alert('Copiar')">Copiar <span>⌘C</span></div>
-                    </div>
-                </div>
-
-                <div class="relative hidden sm:inline">
-                    <span class="cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'menu-vis')">Visualización</span>
-                    <div id="menu-vis" class="dropdown-menu hidden left-0">
-                        <div class="dropdown-item" onclick="document.body.requestFullscreen()">Pantalla Completa</div>
+                        <div class="dropdown-item" onclick="openApp('vscode')">Nuevo Documento VSCode</div>
                     </div>
                 </div>
 
@@ -208,8 +261,14 @@
                 </div>
             </div>
 
-            <!-- Controles de Estado (Wi-Fi y Batería) -->
+            <!-- Controles de Estado, Dinero y Batería -->
             <div class="flex items-center gap-4">
+                <!-- Wallet / Balance Display -->
+                <div class="flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-500/40 px-2.5 py-0.5 rounded-full text-emerald-300 font-mono text-[11px]">
+                    <i class="fa-solid fa-sack-dollar text-emerald-400"></i>
+                    <span>$<span id="macos-money-display">0</span></span>
+                </div>
+
                 <!-- WiFi Menu Dropdown -->
                 <div class="relative">
                     <i id="wifi-icon" class="fa-solid fa-wifi cursor-pointer hover:text-sky-400" onclick="toggleDropdown(event, 'wifi-menu')"></i>
@@ -231,11 +290,6 @@
                             <span>tu wifi.com</span>
                             <i class="fa-solid fa-lock text-[10px]"></i>
                         </div>
-
-                        <div onclick="connectProtectedWifi('pagatumi3rd#', 'paga123')" class="dropdown-item rounded-lg">
-                            <span>pagatumi3rd#</span>
-                            <i class="fa-solid fa-lock text-[10px]"></i>
-                        </div>
                     </div>
                 </div>
 
@@ -252,13 +306,34 @@
         <!-- Área del Escritorio -->
         <div id="desktop-area" class="flex-grow relative overflow-hidden p-6">
             <div class="grid grid-cols-1 gap-6 w-20">
+                <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('vscode')">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
+                        <i class="fa-solid fa-code text-white"></i>
+                    </div>
+                    <span class="text-[11px] font-medium text-white drop-shadow-md text-center">VS Code</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('game3d')">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
+                        <i class="fa-solid fa-cubes text-white"></i>
+                    </div>
+                    <span class="text-[11px] font-medium text-white drop-shadow-md text-center">Game3D</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('playfree')">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
+                        <i class="fa-solid fa-gamepad text-white"></i>
+                    </div>
+                    <span class="text-[11px] font-medium text-white drop-shadow-md text-center">PlayFree</span>
+                </div>
+
                 <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('obs')">
                     <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-zinc-800 to-zinc-600 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
                         <i class="fa-solid fa-video text-red-400"></i>
                     </div>
                     <span class="text-[11px] font-medium text-white drop-shadow-md text-center">OBS Studio</span>
                 </div>
-                
+
                 <div class="flex flex-col items-center gap-1 cursor-pointer group" ondblclick="openApp('vmware')">
                     <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-700 to-indigo-600 border border-white/20 flex items-center justify-center text-2xl shadow-xl group-hover:scale-105 transition">
                         <i class="fa-solid fa-server text-white"></i>
@@ -285,6 +360,92 @@
                         <i class="fa-solid fa-note-sticky text-zinc-900"></i>
                     </div>
                     <span class="text-[11px] font-medium text-white drop-shadow-md text-center">Notas</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- APP: Visual Studio Code -->
+        <div id="app-vscode" class="macos-window hidden w-[820px] h-[520px] z-40 top-12 left-24">
+            <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('vscode')"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <span class="text-xs font-semibold text-white/80">Visual Studio Code — index.html</span>
+                <i class="fa-solid fa-code text-sky-400 text-xs"></i>
+            </div>
+            <div class="flex-grow bg-zinc-950 flex font-mono text-xs overflow-hidden">
+                <div class="w-48 bg-zinc-900/80 p-3 border-r border-white/10 text-zinc-400 flex flex-col gap-2">
+                    <span class="text-[10px] uppercase font-bold text-zinc-500">Explorador</span>
+                    <div class="flex items-center gap-2 text-sky-300 font-bold bg-white/5 p-1.5 rounded"><i class="fa-solid fa-file-code"></i> index.html</div>
+                    <div class="flex items-center gap-2 text-zinc-400 p-1.5"><i class="fa-solid fa-file-json"></i> vercel.json</div>
+                    <div class="flex items-center gap-2 text-zinc-400 p-1.5"><i class="fa-solid fa-file-lines"></i> README.md</div>
+                </div>
+                <div class="flex-grow p-4 overflow-auto text-zinc-300 bg-zinc-950/90">
+                    <pre id="vscode-code-display" class="leading-relaxed"></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- APP: Game3DMaker -->
+        <div id="app-game3d" class="macos-window hidden w-[740px] h-[480px] z-40 top-16 left-32">
+            <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('game3d')"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <span class="text-xs font-semibold text-white/80">Game3DMaker Studio — Creador de Minijuegos</span>
+                <i class="fa-solid fa-cubes text-purple-400 text-xs"></i>
+            </div>
+            <div class="flex-grow bg-zinc-950 p-6 flex flex-col justify-between">
+                <div class="space-y-4">
+                    <h3 class="text-lg font-bold text-purple-300">🎮 Crear Nuevo Juego 3D</h3>
+                    <div class="space-y-2">
+                        <label class="text-xs text-zinc-400">Título del Juego:</label>
+                        <input id="game-title-input" type="text" placeholder="Ej. Cyber Runner 3D" class="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-purple-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs text-zinc-400">Género:</label>
+                        <select id="game-genre-select" class="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-2 text-xs text-white outline-none">
+                            <option>Acción / Aventura 3D</option>
+                            <option>Carreras Sci-Fi</option>
+                            <option>Simulador de Terror</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="bg-purple-950/40 p-4 rounded-xl border border-purple-500/30 text-xs text-purple-200">
+                    💡 Cada juego publicado en <span class="font-bold text-emerald-400">PlayFree.com</span> se venderá a $1 por descarga.
+                </div>
+                <button onclick="publishGameToPlayFree()" class="w-full py-3 bg-purple-600 hover:bg-purple-500 font-bold text-xs rounded-xl shadow-lg transition">🚀 Publicar Juego en PlayFree.com ($1/descarga)</button>
+            </div>
+        </div>
+
+        <!-- APP: PlayFree.com Store -->
+        <div id="app-playfree" class="macos-window hidden w-[780px] h-[500px] z-40 top-20 left-40">
+            <div class="window-header bg-zinc-900/90 px-4 py-2.5 flex justify-between items-center border-b border-white/10">
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-rose-500 cursor-pointer" onclick="closeApp('playfree')"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                </div>
+                <span class="text-xs font-semibold text-white/80">PlayFree.com — Tienda Virtual de Juegos</span>
+                <i class="fa-solid fa-gamepad text-emerald-400 text-xs"></i>
+            </div>
+            <div class="flex-grow bg-zinc-950 p-6 flex flex-col gap-4 overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-emerald-400">PlayFree.com Dashboard</h2>
+                        <p class="text-xs text-zinc-400">Tus juegos publicados ganan $1 por cada descarga automática.</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs text-zinc-400">Ganancias Totales:</span>
+                        <div class="text-lg font-bold text-emerald-400 font-mono">$<span id="playfree-revenue">0</span></div>
+                    </div>
+                </div>
+                <div id="published-games-list" class="grid grid-cols-2 gap-4">
+                    <!-- Dynamic Games List -->
                 </div>
             </div>
         </div>
@@ -377,7 +538,7 @@
                     <div class="p-2 hover:bg-white/5 rounded-lg flex items-center gap-2 cursor-pointer"><i class="fa-solid fa-file text-emerald-400"></i> Documentos</div>
                 </div>
                 <div class="flex-grow p-4 grid grid-cols-4 gap-4 align-content-start">
-                    <div class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="flex flex-col items-center gap-1 cursor-pointer" ondblclick="openApp('vscode')">
                         <i class="fa-solid fa-file-code text-3xl text-amber-400"></i>
                         <span class="text-[10px] text-white">index.html</span>
                     </div>
@@ -425,6 +586,21 @@
         <!-- macOS Dock -->
         <div class="w-full flex justify-center pb-3 z-50">
             <div class="macos-glass px-4 py-2 rounded-2xl flex items-center gap-4 shadow-2xl border border-white/20">
+                <div onclick="openApp('vscode')" class="dock-icon cursor-pointer">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-700 to-sky-500 border border-white/20 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-code text-white"></i>
+                    </div>
+                </div>
+                <div onclick="openApp('game3d')" class="dock-icon cursor-pointer">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 border border-white/20 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-cubes text-white"></i>
+                    </div>
+                </div>
+                <div onclick="openApp('playfree')" class="dock-icon cursor-pointer">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-400 border border-white/20 flex items-center justify-center text-xl shadow-lg">
+                        <i class="fa-solid fa-gamepad text-white"></i>
+                    </div>
+                </div>
                 <div onclick="openApp('finder')" class="dock-icon cursor-pointer">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-600 border border-white/20 flex items-center justify-center text-xl shadow-lg">
                         <i class="fa-solid fa-folder-open text-white"></i>
@@ -463,6 +639,82 @@
     <audio id="snd-explosion" src="https://assets.mixkit.co/active_storage/sfx/2874/2874-preview.mp3"></audio>
 
     <script>
+        // SISTEMA DE DINERO & JUEGOS
+        let playerMoney = 0;
+        let publishedGames = [];
+
+        function updateMoneyUI() {
+            document.getElementById('macos-money-display').innerText = playerMoney;
+            document.getElementById('world-money-display').innerText = playerMoney;
+            document.getElementById('playfree-revenue').innerText = playerMoney;
+        }
+
+        function publishGameToPlayFree() {
+            const titleInput = document.getElementById('game-title-input').value.trim();
+            const genre = document.getElementById('game-genre-select').value;
+            if (!titleInput) {
+                alert('Por favor escribe un título para tu juego 3D.');
+                return;
+            }
+
+            const game = {
+                id: Date.now(),
+                title: titleInput,
+                genre: genre,
+                downloads: 0
+            };
+
+            publishedGames.push(game);
+            document.getElementById('game-title-input').value = '';
+            alert(`🎉 ¡"${titleInput}" ha sido publicado en PlayFree.com! Ganarás $1 por cada descarga.`);
+            renderPlayFreeGames();
+            openApp('playfree');
+        }
+
+        function renderPlayFreeGames() {
+            const list = document.getElementById('published-games-list');
+            list.innerHTML = '';
+            if (publishedGames.length === 0) {
+                list.innerHTML = `<div class="col-span-2 text-center text-zinc-500 py-8 text-xs">No has publicado juegos todavía. Usa Game3DMaker.</div>`;
+                return;
+            }
+
+            publishedGames.forEach(g => {
+                const card = document.createElement('div');
+                card.className = 'bg-zinc-900 border border-white/10 rounded-xl p-4 flex flex-col justify-between gap-2';
+                card.innerHTML = `
+                    <div>
+                        <div class="font-bold text-white text-sm">${g.title}</div>
+                        <div class="text-[10px] text-purple-400">${g.genre}</div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs pt-2 border-t border-white/10">
+                        <span class="text-zinc-400 font-mono">Downloads: <span class="text-emerald-400 font-bold">${g.downloads}</span></span>
+                        <span class="text-emerald-400 font-bold font-mono">+$${g.downloads}</span>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // Generador de descargas y ganancias pasivas
+        setInterval(() => {
+            if (publishedGames.length > 0) {
+                publishedGames.forEach(g => {
+                    const newSales = Math.floor(Math.random() * 3) + 1;
+                    g.downloads += newSales;
+                    playerMoney += newSales;
+                });
+                updateMoneyUI();
+                renderPlayFreeGames();
+            }
+        }, 5000);
+
+        // VS CODE - CARGAR CÓDIGO FUENTE
+        window.addEventListener('load', () => {
+            const sourceCode = document.documentElement.outerHTML;
+            document.getElementById('vscode-code-display').innerText = sourceCode.substring(0, 2000) + '\n\n... [Código HTML completo cargado activamente] ...';
+        });
+
         // BOOT ANIMATION
         window.addEventListener('load', () => {
             const progress = document.getElementById('boot-progress');
@@ -483,7 +735,9 @@
         // RELOJ
         setInterval(() => {
             const now = new Date();
-            document.getElementById('clock-display').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('clock-display').innerText = timeStr;
+            document.getElementById('win10-clock').innerText = timeStr;
         }, 1000);
 
         // BATERÍA SIMULADA
@@ -524,7 +778,7 @@
         }
 
         function triggerLowBatteryShutdown() {
-            alert('🪫 Batería agotada (0%). La laptop se apagarás.');
+            alert('🪫 Batería agotada (0%). La laptop se apagará.');
             goTo3DWorld();
             document.getElementById('charger-ui').classList.remove('hidden');
         }
@@ -553,8 +807,10 @@
             }
         }
 
-        // MUNDO 3D & THREE.JS
-        let scene, camera, renderer, laptopMesh;
+        // MUNDO 3D (HABITACIONES & PATRULLAJE DE MAMÁ)
+        let scene, camera, renderer, laptopMesh, currentLocation = 'room';
+        let momPatrolling = false;
+
         function init3DRoom() {
             const container = document.getElementById('room-canvas');
             if (renderer) return;
@@ -565,21 +821,25 @@
             renderer.setSize(container.clientWidth, container.clientHeight);
             container.appendChild(renderer.domElement);
 
-            // Luz
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
             const dirLight = new THREE.DirectionalLight(0x007aff, 1);
             dirLight.position.set(5, 10, 7);
             scene.add(dirLight);
 
-            // Laptop Mesh (Representación 3D)
+            // Escenario 3D Básico
+            const roomGeo = new THREE.BoxGeometry(10, 4, 10);
+            const roomMat = new THREE.MeshBasicMaterial({ color: 0x1e1e24, wireframe: true });
+            const roomMesh = new THREE.Mesh(roomGeo, roomMat);
+            scene.add(roomMesh);
+
+            // Laptop Mesh
             const geometry = new THREE.BoxGeometry(2.4, 0.1, 1.6);
             const material = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8, roughness: 0.2 });
             laptopMesh = new THREE.Mesh(geometry, material);
             scene.add(laptopMesh);
 
-            camera.position.set(0, 2, 3);
-            camera.lookAt(0, 0, 0);
+            camera.position.set(0, 1.5, 3);
 
             function animate() {
                 requestAnimationFrame(animate);
@@ -587,6 +847,72 @@
                 renderer.render(scene, camera);
             }
             animate();
+        }
+
+        // Sistema de patrullaje de Mamá
+        setInterval(() => {
+            if (currentLocation === 'mom-room') {
+                momPatrolling = Math.random() > 0.5;
+                const warn = document.getElementById('mom-warning');
+                if (momPatrolling) {
+                    warn.classList.remove('hidden');
+                    if (document.getElementById('win10-screen').classList.contains('hidden') === false) {
+                        alert('🚨 ¡MAMÁ TE ATRAPÓ USANDO SU LAPTOP DE TRABAJO CON WINDOWS 10! Te castigó y te mandó a tu cuarto.');
+                        document.getElementById('win10-screen').classList.add('hidden');
+                        teleport3D('room');
+                    }
+                } else {
+                    warn.classList.add('hidden');
+                }
+            }
+        }, 3000);
+
+        function teleport3D(location) {
+            currentLocation = location;
+            const badge = document.getElementById('player-location-badge');
+            const btnMac = document.getElementById('btn-use-mac');
+            const btnWin10 = document.getElementById('btn-use-win10');
+            const btnApple = document.getElementById('btn-buy-mac');
+
+            btnMac.classList.add('hidden');
+            btnWin10.classList.add('hidden');
+            btnApple.classList.add('hidden');
+
+            if (location === 'room') {
+                badge.innerText = 'Ubicación: Mi Habitación (Piso 2)';
+                btnMac.classList.remove('hidden');
+            } else if (location === 'mom-room') {
+                badge.innerText = 'Ubicación: Cuarto de Mamá (Piso 2)';
+                btnWin10.classList.remove('hidden');
+            } else if (location === 'street') {
+                badge.innerText = 'Ubicación: Calle / Tienda Apple (Piso 1)';
+                btnApple.classList.remove('hidden');
+
+                if (Math.random() < 0.3 && playerMoney > 0) {
+                    const stolen = Math.floor(playerMoney * 0.5);
+                    playerMoney -= stolen;
+                    updateMoneyUI();
+                    alert(`⚠️ ¡TE ASALTARON EN LA CALLE! Te robaron $${stolen}.`);
+                }
+            }
+        }
+
+        function interactWith3DObject(type) {
+            if (type === 'macbook') {
+                returnToLaptop();
+            } else if (type === 'mom-laptop') {
+                document.getElementById('win10-screen').classList.remove('hidden');
+            } else if (type === 'apple-store') {
+                showAppleStore();
+            }
+        }
+
+        function exitWin10To3D() {
+            document.getElementById('win10-screen').classList.add('hidden');
+        }
+
+        function openWin10Edge() {
+            document.getElementById('win10-edge-window').classList.remove('hidden');
         }
 
         function goTo3DWorld() {
@@ -605,11 +931,17 @@
         }
 
         function buyNewLaptop() {
-            alert('🛍️ ¡Felicidades! Compraste una nueva MacBook Pro por $1,200.');
-            batteryLevel = 100;
-            isCharging = false;
-            updateBatteryUI();
-            returnToLaptop();
+            if (playerMoney >= 1200) {
+                playerMoney -= 1200;
+                updateMoneyUI();
+                alert('🛍️ ¡Felicidades! Compraste una nueva MacBook Pro M3 por $1,200.');
+                batteryLevel = 100;
+                isCharging = false;
+                updateBatteryUI();
+                returnToLaptop();
+            } else {
+                alert(`❌ No tienes suficiente dinero. Cuesta $1,200 y tienes $${playerMoney}. ¡Publica más juegos en Game3DMaker!`);
+            }
         }
 
         function showChargerUI() {
@@ -628,7 +960,7 @@
             document.getElementById('boot-screen').style.display = 'flex';
             document.getElementById('boot-screen').style.opacity = '1';
             document.getElementById('boot-progress').style.width = '0%';
-            setTimeout(() => alert('💻 Laptop apagada. Haz clic en reiniciar o recargar para encender.'), 500);
+            setTimeout(() => alert('💻 Laptop apagada. Recarga la página para volver a encender.'), 500);
         }
 
         // DROPDOWNS & VENTANAS
@@ -659,7 +991,7 @@
         }
 
         function closeAllApps() {
-            ['obs', 'safari', 'finder', 'vmware', 'terminal', 'notes'].forEach(closeApp);
+            ['obs', 'safari', 'finder', 'vmware', 'terminal', 'vscode', 'game3d', 'playfree', 'notes'].forEach(closeApp);
         }
 
         function navigateSafari() {
@@ -700,7 +1032,7 @@
                 res.className = 'text-white/80';
 
                 if (cmd === 'help') {
-                    res.innerText = 'Comandos disponibles: help, clear, neofetch, ls, date, echo [texto]';
+                    res.innerText = 'Comandos disponibles: help, clear, neofetch, ls, date, money, echo [texto]';
                 } else if (cmd === 'clear') {
                     output.innerHTML = '';
                     input.value = '';
@@ -712,8 +1044,11 @@
   Host: Vercel Serverless CDN
   Kernel: WASM v86 x86
   Battery: ${batteryLevel}%
+  Saldo: $${playerMoney}
   Shell: zsh 5.8
 </pre>`;
+                } else if (cmd === 'money') {
+                    res.innerText = `Saldo actual: $${playerMoney}`;
                 } else if (cmd === 'ls') {
                     res.innerText = 'index.html  vercel.json  favicon.svg  README.md  LICENSE';
                 } else if (cmd === 'date') {
@@ -756,6 +1091,16 @@
             mediaRecorder.start();
             document.getElementById('obs-status').innerText = 'Estado: Grabando...';
         }
+
+        // Controles de teclado WASD para mundo 3D
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('world-3d').classList.contains('hidden')) return;
+            const key = e.key.toLowerCase();
+            if (key === 'w' && camera) camera.position.z -= 0.2;
+            if (key === 's' && camera) camera.position.z += 0.2;
+            if (key === 'a' && camera) camera.position.x -= 0.2;
+            if (key === 'd' && camera) camera.position.x += 0.2;
+        });
 
         // Drag & Drop
         let activeWindow = null, offsetX = 0, offsetY = 0;
