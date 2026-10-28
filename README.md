@@ -36,3 +36,16 @@ macos-cloud-sim/
 ## 📄 Licencia
 
 Bajo Licencia **MIT**.
+
+
+## 🧩 Módulos añadidos y límites actuales
+
+La barra flotante de la esquina inferior derecha abre cuatro módulos nuevos sin reemplazar las aplicaciones anteriores:
+
+- **servers.com (simulador):** compra servidores ficticios para web, Minecraft, SQL y hosting avanzado. El saldo y los servidores se guardan en el navegador; los ingresos del juego son simulados.
+- **Sim Browser:** navegador interno separado de Safari. Solo acepta direcciones ficticias `cloud://home`, `cloud://servers`, `cloud://cloudhub` y `cloud://status`; no navega por Internet real.
+- **CloudHub:** historial local de commits de demostración, guardado en `localStorage`, con exportación JSON. No implementa Git real, sincronización remota ni colaboración todavía.
+- **Idioma:** selector para español, inglés, francés, alemán, portugués, japonés, chino simplificado, ruso, árabe, italiano, coreano e hindi. Por ahora el selector traduce parcialmente los módulos nuevos; no traduce automáticamente cada app antigua.
+
+Estos módulos son una simulación front-end: no realizan compras reales, no alojan sitios ni servidores de Minecraft reales y no suben repositorios a un proveedor cloud. Los datos permanecen en el navegador donde se usan.
+
