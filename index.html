@@ -1123,5 +1123,91 @@
         });
         document.addEventListener('mouseup', () => activeWindow = null);
     </script>
+
+<!-- macOS Cloud Simulator: módulos v4 añadidos sin reemplazar las apps antiguas -->
+<style>
+#cloudhub-repair-panel{position:fixed;right:18px;bottom:18px;z-index:180;display:flex;gap:8px;flex-wrap:wrap;max-width:min(560px,calc(100vw - 36px))}
+.ch-launch{border:1px solid #ffffff35;background:#171923ed;color:white;border-radius:12px;padding:10px 13px;font:600 12px system-ui;box-shadow:0 8px 28px #0008;cursor:pointer}
+.ch-launch:hover{background:#2563eb}
+.ch-modal{position:fixed;z-index:190;inset:6vh 5vw;background:#101116;color:#f4f4f5;border:1px solid #ffffff30;border-radius:18px;box-shadow:0 25px 100px #000b;display:none;flex-direction:column;overflow:hidden;font:14px system-ui}
+.ch-modal.open{display:flex}.ch-head{padding:14px 18px;background:#202127;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff20}
+.ch-body{padding:20px;overflow:auto;min-height:0;flex:1}.ch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.ch-card{padding:16px;border:1px solid #ffffff1c;border-radius:14px;background:#1b1c23}.ch-card h3{font-weight:700;margin-bottom:8px}.ch-muted{color:#a1a1aa;font-size:12px}
+.ch-btn{background:#2563eb;color:white;border:0;border-radius:9px;padding:9px 12px;font-weight:600;cursor:pointer;margin:4px 4px 4px 0}
+.ch-btn.secondary{background:#3f3f46}.ch-input,.ch-select,.ch-textarea{background:#09090b;border:1px solid #52525b;border-radius:8px;padding:9px;color:white;width:100%;margin:5px 0 10px}
+.ch-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.ch-browser{display:flex;gap:8px}.ch-browser input{flex:1}
+@media(max-width:650px){.ch-modal{inset:2vh 2vw}.ch-row{grid-template-columns:1fr}#cloudhub-repair-panel{left:10px;right:10px;bottom:10px}.ch-launch{flex:1}}
+</style>
+<div id="cloudhub-repair-panel" aria-label="Aplicaciones nuevas">
+ <button class="ch-launch" onclick="CH.open('servers')">🖥️ servers.com</button>
+ <button class="ch-launch" onclick="CH.open('browser')">🌐 Sim Browser</button>
+ <button class="ch-launch" onclick="CH.open('cloudhub')">☁️ CloudHub</button>
+ <button class="ch-launch" onclick="CH.open('settings')">⚙️ Idioma</button>
+</div>
+<section id="ch-servers" class="ch-modal" role="dialog" aria-label="servers.com">
+ <header class="ch-head"><strong>🖥️ servers.com — Cloud Hosting (simulación)</strong><button class="ch-btn secondary" onclick="CH.close('servers')">✕</button></header>
+ <div class="ch-body"><p class="ch-muted mb-4">Tienda ficticia dentro del juego: no conecta con servers.com ni compra servicios reales. Saldo compartido con la simulación cuando se detecta.</p>
+  <div class="ch-grid">
+   <article class="ch-card"><h3>🌐 Web Starter</h3><p>1 vCPU · 2 GB RAM · 30 GB SSD</p><p class="text-emerald-400 font-bold my-2">$80 · +$8/min simulado</p><button class="ch-btn" onclick="CH.buy('Web Starter',80,8,'Sitios web')">Comprar</button></article>
+   <article class="ch-card"><h3>⛏️ Minecraft Node</h3><p>4 vCPU · 8 GB RAM · 100 GB NVMe</p><p class="text-emerald-400 font-bold my-2">$250 · +$22/min simulado</p><button class="ch-btn" onclick="CH.buy('Minecraft Node',250,22,'Minecraft')">Comprar</button></article>
+   <article class="ch-card"><h3>🗄️ SQL Database</h3><p>2 vCPU · 4 GB RAM · 80 GB NVMe</p><p class="text-emerald-400 font-bold my-2">$160 · +$14/min simulado</p><button class="ch-btn" onclick="CH.buy('SQL Database',160,14,'Bases de datos')">Comprar</button></article>
+   <article class="ch-card"><h3>🚀 Dedicated Pro</h3><p>8 vCPU · 32 GB RAM · 1 TB NVMe</p><p class="text-emerald-400 font-bold my-2">$700 · +$55/min simulado</p><button class="ch-btn" onclick="CH.buy('Dedicated Pro',700,55,'Hosting avanzado')">Comprar</button></article>
+  </div><h3 class="text-lg font-bold mt-6 mb-3">Mis servidores</h3><div id="ch-server-list" class="ch-grid"></div>
+ </div>
+</section>
+<section id="ch-browser" class="ch-modal" role="dialog" aria-label="Sim Browser">
+ <header class="ch-head"><strong>🌐 Sim Browser — navegador interno del simulador</strong><button class="ch-btn secondary" onclick="CH.close('browser')">✕</button></header>
+ <div class="ch-body"><p class="ch-muted mb-3">Este navegador es distinto de Safari y usa páginas internas ficticias; no navega por Internet real.</p>
+  <form class="ch-browser" onsubmit="event.preventDefault();CH.navigate()"><input id="ch-browser-url" class="ch-input" value="cloud://home" aria-label="Dirección"><button class="ch-btn">Ir</button></form>
+  <div id="ch-browser-page" class="ch-card"><h2 class="text-2xl font-bold mb-2">Bienvenido a Sim Browser</h2><p>Prueba estas direcciones: <button class="ch-btn" onclick="CH.quick('cloud://home')">Inicio</button><button class="ch-btn" onclick="CH.quick('cloud://servers')">servers.com</button><button class="ch-btn" onclick="CH.quick('cloud://cloudhub')">CloudHub</button><button class="ch-btn" onclick="CH.quick('cloud://status')">Estado del sistema</button></p></div>
+ </div>
+</section>
+<section id="ch-cloudhub" class="ch-modal" role="dialog" aria-label="CloudHub">
+ <header class="ch-head"><strong>☁️ CloudHub — repositorios y Git simulado</strong><button class="ch-btn secondary" onclick="CH.close('cloudhub')">✕</button></header>
+ <div class="ch-body"><p class="ch-muted mb-4">Git ficticio guardado en este navegador con localStorage. No es Git real ni sube archivos a un servidor.</p>
+  <div class="ch-row"><div class="ch-card"><label for="ch-repo-name">Nombre del repositorio</label><input id="ch-repo-name" class="ch-input" maxlength="60" value="mi-proyecto"><label for="ch-repo-file">Archivo a registrar</label><input id="ch-repo-file" class="ch-input" maxlength="100" value="index.html"><label for="ch-repo-note">Mensaje del commit</label><input id="ch-repo-note" class="ch-input" maxlength="160" value="Primer commit"><button class="ch-btn" onclick="CH.commit()">＋ Crear commit</button><button class="ch-btn secondary" onclick="CH.exportRepo()">Exportar historial JSON</button></div>
+  <div class="ch-card"><h3>Historial de commits</h3><div id="ch-commits"></div></div></div>
+ </div>
+</section>
+<section id="ch-settings" class="ch-modal" role="dialog" aria-label="Ajustes de idioma">
+ <header class="ch-head"><strong>⚙️ Ajustes del simulador</strong><button class="ch-btn secondary" onclick="CH.close('settings')">✕</button></header>
+ <div class="ch-body"><div class="ch-card"><h3>🌍 Idioma de la interfaz añadida</h3><p class="ch-muted mb-3">Selector inicial de idiomas. Traduce los módulos nuevos; las apps antiguas conservan sus textos originales.</p><label for="ch-language">Idioma</label><select id="ch-language" class="ch-select" onchange="CH.setLanguage(this.value)">
+  <option value="es">Español</option><option value="en">English</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="pt">Português</option><option value="ja">日本語</option><option value="zh">简体中文</option><option value="ru">Русский</option><option value="ar">العربية</option><option value="it">Italiano</option><option value="ko">한국어</option><option value="hi">हिन्दी</option>
+ </select><p id="ch-language-status" class="ch-muted">Idioma seleccionado: Español</p></div></div>
+</section>
+<script>
+(function(){
+ const KEY='macosCloudSimV4';
+ const defaults={servers:[],commits:[],language:'es',balance:0};
+ let state;try{state=Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'));}catch(e){state={...defaults};}
+ const moneyIds=['macos-money-display','world-money-display'];
+ function getBalance(){let n=Number(state.balance)||0;const old=document.getElementById('macos-money-display');if(old&&Number.isFinite(Number(old.textContent)))n=Math.max(n,Number(old.textContent)||0);return n;}
+ function setBalance(n){state.balance=Math.max(0,Math.floor(n));moneyIds.forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=String(state.balance);});save();}
+ function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+ const translations={es:{home:'Bienvenido a Sim Browser',status:'Estado del sistema',language:'Idioma seleccionado'},en:{home:'Welcome to Sim Browser',status:'System status',language:'Selected language'},fr:{home:'Bienvenue dans Sim Browser',status:'État du système',language:'Langue sélectionnée'},de:{home:'Willkommen bei Sim Browser',status:'Systemstatus',language:'Ausgewählte Sprache'},pt:{home:'Bem-vindo ao Sim Browser',status:'Estado do sistema',language:'Idioma selecionado'},ja:{home:'Sim Browser へようこそ',status:'システム状態',language:'選択した言語'},zh:{home:'欢迎使用 Sim Browser',status:'系统状态',language:'当前语言'},ru:{home:'Добро пожаловать в Sim Browser',status:'Состояние системы',language:'Выбранный язык'},ar:{home:'مرحبًا بك في Sim Browser',status:'حالة النظام',language:'اللغة المحددة'},it:{home:'Benvenuto in Sim Browser',status:'Stato del sistema',language:'Lingua selezionata'},ko:{home:'Sim Browser에 오신 것을 환영합니다',status:'시스템 상태',language:'선택한 언어'},hi:{home:'Sim Browser में आपका स्वागत है',status:'सिस्टम स्थिति',language:'चुनी गई भाषा'}};
+ window.CH={
+  open(id){const el=document.getElementById('ch-'+id);if(el)el.classList.add('open');if(id==='servers')this.renderServers();if(id==='cloudhub')this.renderCommits();},
+  close(id){const el=document.getElementById('ch-'+id);if(el)el.classList.remove('open');},
+  buy(name,cost,income,type){const balance=getBalance();if(balance<cost){alert('Saldo insuficiente. Necesitas 
+</html>
++cost+' y tienes 
+</html>
++balance+'.');return;}setBalance(balance-cost);state.servers.push({id:Date.now()+Math.random(),name,cost,income,type,started:Date.now()});save();this.renderServers();alert('Servidor añadido a la simulación: '+name);},
+  renderServers(){const el=document.getElementById('ch-server-list');if(!el)return;el.innerHTML='';if(!state.servers.length){el.innerHTML='<p class="ch-muted">Todavía no tienes servidores. Compra uno para empezar.</p>';return;}state.servers.forEach((s,i)=>{const card=document.createElement('article');card.className='ch-card';const title=document.createElement('h3');title.textContent=s.name;const info=document.createElement('p');info.textContent=s.type+' · +
+</html>
++s.income+'/min simulado';const remove=document.createElement('button');remove.className='ch-btn secondary';remove.textContent='Eliminar servidor';remove.onclick=()=>{state.servers.splice(i,1);save();this.renderServers();};card.append(title,info,remove);el.appendChild(card);});},
+  navigate(){const value=(document.getElementById('ch-browser-url').value||'').trim();this.quick(value);},
+  quick(url){document.getElementById('ch-browser-url').value=url;const page=document.getElementById('ch-browser-page');page.innerHTML='';const h=document.createElement('h2');h.className='text-2xl font-bold mb-2';const p=document.createElement('p');p.className='ch-muted';if(url==='cloud://home'){h.textContent=translations[state.language]?.home||translations.es.home;p.textContent='Páginas internas de macOS Cloud Simulator.';}else if(url==='cloud://servers'){h.textContent='servers.com';p.textContent='Hosting ficticio: abre el panel servers.com para comprar servidores virtuales.';const b=document.createElement('button');b.className='ch-btn';b.textContent='Abrir tienda';b.onclick=()=>this.open('servers');page.append(h,p,b);return;}else if(url==='cloud://cloudhub'){h.textContent='CloudHub';p.textContent='Repositorios y commits guardados localmente.';const b=document.createElement('button');b.className='ch-btn';b.textContent='Abrir CloudHub';b.onclick=()=>this.open('cloudhub');page.append(h,p,b);return;}else if(url==='cloud://status'){h.textContent=translations[state.language]?.status||translations.es.status;p.textContent='Servidores: '+state.servers.length+' · Commits guardados: '+state.commits.length+' · Datos locales en este navegador.';}else{h.textContent='Dirección no encontrada';p.textContent='Sim Browser solo admite direcciones cloud:// internas. Prueba cloud://home, cloud://servers, cloud://cloudhub o cloud://status.';}page.append(h,p);},
+  commit(){const repo=(document.getElementById('ch-repo-name').value||'').trim();const file=(document.getElementById('ch-repo-file').value||'').trim();const message=(document.getElementById('ch-repo-note').value||'').trim();if(!repo||!file||!message){alert('Completa repositorio, archivo y mensaje.');return;}state.commits.unshift({id:Math.random().toString(16).slice(2,10),repo,file,message,date:new Date().toISOString()});save();this.renderCommits();},
+  renderCommits(){const el=document.getElementById('ch-commits');if(!el)return;el.innerHTML='';if(!state.commits.length){el.textContent='Aún no hay commits.';return;}state.commits.slice(0,100).forEach(c=>{const row=document.createElement('article');row.className='ch-card mb-2';const h=document.createElement('strong');h.textContent=c.repo+' · '+c.file;const p=document.createElement('p');p.textContent=c.message;const small=document.createElement('p');small.className='ch-muted';small.textContent=c.id+' · '+new Date(c.date).toLocaleString();row.append(h,p,small);el.appendChild(row);});},
+  exportRepo(){const blob=new Blob([JSON.stringify(state.commits,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cloudhub-commits.json';a.click();URL.revokeObjectURL(url);},
+  setLanguage(lang){state.language=lang;save();const names={es:'Español',en:'English',fr:'Français',de:'Deutsch',pt:'Português',ja:'日本語',zh:'简体中文',ru:'Русский',ar:'العربية',it:'Italiano',ko:'한국어',hi:'हिन्दी'};document.documentElement.lang=lang;document.getElementById('ch-language-status').textContent=(translations[lang]?.language||translations.es.language)+': '+(names[lang]||lang);this.quick(document.getElementById('ch-browser-url').value||'cloud://home');}
+ };
+ // El ingreso de servidores es ficticio, persistente y separado del ingreso del juego original.
+ setInterval(()=>{if(state.servers.length){const earned=state.servers.reduce((sum,s)=>sum+(Number(s.income)||0),0);setBalance(getBalance()+earned);}},60000);
+ const select=document.getElementById('ch-language');if(select)select.value=state.language;
+})();
+</script>
+
 </body>
 </html>
